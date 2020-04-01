@@ -1,0 +1,32 @@
+FROM raspbian/stretch
+
+# install prerequisite packages before running scripts to avoid excessive install runs
+RUN apt-get update &&\
+    apt-get -y upgrade &&\
+    apt-get -y install curl lsb-release python python3
+
+# Dex installer needs pi user to function correctly
+# and for install scripts to function non-interactively
+# the pi user needs to be set up as a sudoer allowed to
+# operate without password
+RUN useradd -m pi &&\
+    echo "pi:raspberry" chpasswd &&\
+    adduser pi sudo &&\
+    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+USER pi
+
+# some of the scripts need for non-interactive environment variable set
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN export DEBIAN_FRONTEND=noninteractive &&\
+    curl -kL dexterindustries.com/update_grovepi | bash -s -- --bypass-gui-installation
+
+WORKDIR /app
+
+COPY requirements.txt ./
+RUN sudo pip3 install -r requirements.txt
+
+COPY . .
+
+CMD sudo python3 ./main.py
