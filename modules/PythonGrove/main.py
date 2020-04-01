@@ -32,6 +32,9 @@ async def main():
                 grovepi.ledBar_setLevel(LED_BAR_PORT, counter % 10)
                 time.sleep(1)
 
+            # we're done, turn off the lights
+            grovepi.ledBar_setLevel(LED_BAR_PORT, 0)
+
         # define behavior for halting the application
         def stdin_listener():
             while True:
